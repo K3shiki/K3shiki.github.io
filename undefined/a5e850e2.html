@@ -1,0 +1,309 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>【GAMES101]图形学学习记录——几何 | Keshiki's Blog</title><meta name="author" content="Keshiki"><meta name="copyright" content="Keshiki"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="【GAMES101]图形学学习记录——几何在现实生活中，物体有各种各样的形状，在这一节中，我们将学习如何在图形学中表示这些不同的形状。 隐式和显式几何表示隐式几何表示只包含构成几何形状的点满足的关系，不包含这些点的具体位置，通常为一个函数。例如一个球的隐式表示：  x^2+y^2+z^2&#x3D;1通常用以下方式表示：  f(x,y,z)&#x3D;x^2+y^2+z^2-1&#x3D;0隐式表示很容易判断一个点在不在几何平">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【GAMES101]图形学学习记录——几何">
+<meta property="og:url" content="http://example.com/undefined/a5e850e2.html">
+<meta property="og:site_name" content="Keshiki&#39;s Blog">
+<meta property="og:description" content="【GAMES101]图形学学习记录——几何在现实生活中，物体有各种各样的形状，在这一节中，我们将学习如何在图形学中表示这些不同的形状。 隐式和显式几何表示隐式几何表示只包含构成几何形状的点满足的关系，不包含这些点的具体位置，通常为一个函数。例如一个球的隐式表示：  x^2+y^2+z^2&#x3D;1通常用以下方式表示：  f(x,y,z)&#x3D;x^2+y^2+z^2-1&#x3D;0隐式表示很容易判断一个点在不在几何平">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/img/avatar.png">
+<meta property="article:published_time" content="2024-12-27T10:59:06.000Z">
+<meta property="article:modified_time" content="2025-02-19T14:40:06.123Z">
+<meta property="article:author" content="Keshiki">
+<meta property="article:tag" content="Keshiki,Keshiki&#39;s Blog,Keshiki的博客,博客,Blog,blog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/img/avatar.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "【GAMES101]图形学学习记录——几何",
+  "url": "http://example.com/undefined/a5e850e2.html",
+  "image": "http://example.com/img/avatar.png",
+  "datePublished": "2024-12-27T10:59:06.000Z",
+  "dateModified": "2025-02-19T14:40:06.123Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Keshiki",
+      "url": "http://example.com/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/undefined/a5e850e2.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="manifest" href="/manifest.json"/><meta name="msapplication-TileColor" content="#39C5BB"/><link rel="apple-touch-icon" sizes="180x180" href="/img/siteicon/128.png"/><link rel="icon" type="image/png" sizes="32x32" href="/img/siteicon/32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/img/siteicon/16.png"/><link rel="mask-icon" href="/img/siteicon/128.png" color="#5bbad5"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '【GAMES101]图形学学习记录——几何',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css" media="defer" onload="this.media='all'"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdn.cbd.int/hexo-butterfly-tag-plugins-plus@latest/lib/assets/font-awesome-animation.min.css" media="defer" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/hexo-butterfly-tag-plugins-plus@latest/lib/tag_plugins.css" media="defer" onload="this.media='all'"><script src="https://cdn.cbd.int/hexo-butterfly-tag-plugins-plus@latest/lib/assets/carousel-touch.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/hexo-butterfly-wowjs/lib/animate.min.css" media="print" onload="this.media='screen'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Keshiki's Blog" type="application/atom+xml">
+</head><body><div id="web_bg" style="background-image: url(https://s21.ax1x.com/2024/12/11/pAbSVg0.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/bangumis/index.html"><i class="fa-fw fas fa-home"></i><span> 追番</span></a></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Keshiki's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">【GAMES101]图形学学习记录——几何</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/bangumis/index.html"><i class="fa-fw fas fa-home"></i><span> 追番</span></a></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">【GAMES101]图形学学习记录——几何</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-12-27T10:59:06.000Z" title="发表于 2024-12-27 18:59:06">2024-12-27</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-02-19T14:40:06.123Z" title="更新于 2025-02-19 22:40:06">2025-02-19</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="【GAMES101-图形学学习记录——几何"><a href="#【GAMES101-图形学学习记录——几何" class="headerlink" title="【GAMES101]图形学学习记录——几何"></a>【GAMES101]图形学学习记录——几何</h1><p>在现实生活中，物体有各种各样的形状，在这一节中，我们将学习如何在图形学中表示这些不同的形状。</p>
+<h2 id="隐式和显式几何表示"><a href="#隐式和显式几何表示" class="headerlink" title="隐式和显式几何表示"></a>隐式和显式几何表示</h2><h3 id="隐式几何表示"><a href="#隐式几何表示" class="headerlink" title="隐式几何表示"></a>隐式几何表示</h3><p>只包含构成几何形状的点满足的<strong>关系</strong>，不包含这些点的具体位置，通常为一个函数。例如一个球的隐式表示：</p>
+<script type="math/tex; mode=display">
+x^2+y^2+z^2=1</script><p>通常用以下方式表示：</p>
+<script type="math/tex; mode=display">
+f(x,y,z)=x^2+y^2+z^2-1=0</script><p>隐式表示很容易判断一个点在不在几何平面上，但很难找出几何平面上有哪些点。</p>
+<h3 id="显式几何表示"><a href="#显式几何表示" class="headerlink" title="显式几何表示"></a>显式几何表示</h3><p>直接将几何形状上的所有的点都表示出来，或者通过参数映射的方法定义的表面。参数映射的解释如下：</p>
+<p><img src="/undefined/a5e850e2/image-20241228181255365.png" alt="image-20241228181255365"></p>
+<p>显式表示很容易判断哪些点在平面上，但很难判断一个点在平面上，平面内还是平面外。</p>
+<h2 id="不同的隐式表示"><a href="#不同的隐式表示" class="headerlink" title="不同的隐式表示"></a>不同的隐式表示</h2><p>之前所说函数形式的隐式表示虽然能表示出一个几何图形，但我们很难直观地通过一个复杂的函数知道这个几何图形的形状。以下是一些其他的隐式表示方法。</p>
+<ul>
+<li><strong>CSG(Constructive Solid Geometry)</strong>：通过对基础的几何体做一些简单的布尔运算来表示复杂的几何体。如图所示：</li>
+</ul>
+<p><img src="/undefined/a5e850e2/image-20241228190253928.png" alt="CSG"></p>
+<ul>
+<li><strong>Distance Functions(距离函数)</strong>：对于任何一个几何图形，不直接描述它的表面，而是描述如何一个点到这个表面的最近距离。求出两个物体的距离函数，并进行融合，就可以得到新的物体。（怎么感觉更不直观了</li>
+</ul>
+<p><img src="/undefined/a5e850e2/image-20241228192735963.png" alt="Distance Functions"></p>
+<h2 id="不同的显式表示"><a href="#不同的显式表示" class="headerlink" title="不同的显式表示"></a>不同的显式表示</h2><ul>
+<li><p><strong>点云</strong>：不考虑物体是一个表面，而是表面上的一些点，当足够精细时就和平面相差无几。</p>
+</li>
+<li><p><strong>多边形面</strong>：大多数是三角形和四边形。用多边形的组合来描述几何图形。在图形学中的应用最为广泛。</p>
+<p>  .obj文件：一种文本文件，分别记录了一堆点，一堆法线和一堆纹理坐标，再将它们组织起来来描述图形。</p>
+</li>
+</ul>
+<h2 id="曲线-Curves"><a href="#曲线-Curves" class="headerlink" title="曲线(Curves)"></a>曲线(Curves)</h2><h3 id="贝塞尔曲线"><a href="#贝塞尔曲线" class="headerlink" title="贝塞尔曲线"></a>贝塞尔曲线</h3><p>用一系列控制点去定义某一个曲线。</p>
+<h4 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h4><p>假设在时间0-1内，时间0在起始点，时间1在结束点，我们要算出在任意时间0-1中任意时刻点在空间中的位置。对于n个控制点（n&gt;2），我们在每两个相邻的点之间连一条线段，并在这个线段上找到使其比例为t的点。当进行一轮这样的操作后，我们得到了n-1个点。重复以上操作，直到最终只剩下一个点，这个点就是时间t所在的点。当我们枚举时间t，得到的点连成的就是贝塞尔曲线。图解如下：</p>
+<p><img src="/undefined/a5e850e2/image-20241228224711812.png" alt="贝塞尔曲线"></p>
+<script type="math/tex; mode=display">
+b^n(t)=b_0^n(t)=\sum_{j=0}^nb_jB_j^n(t) \\
+B_i^n(t)=C_n^it^i(1-t)^{n-i} \\
+B_i^nt被称为伯恩斯坦多项式</script><h4 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h4><ul>
+<li>贝塞尔曲线的起点是第一个控制点，终点是最后一个控制点。</li>
+<li>起点处切线的方向一定为b2-b1，终点处的方向一定为bn-b(n-1)。</li>
+<li>控制点经过仿射变换后，生成的贝塞尔曲线形状不会改变。</li>
+<li>控制点得到的曲线一定在控制点形成的<strong>凸包</strong>内。</li>
+</ul>
+<h4 id="逐段控制的贝塞尔曲线"><a href="#逐段控制的贝塞尔曲线" class="headerlink" title="逐段控制的贝塞尔曲线"></a>逐段控制的贝塞尔曲线</h4><p>当控制点过多时，计算成本会增加，同时控制的效果会变差。因此，更高效的做法是逐段用少量控制点（通常是四个）来逐段控制曲线。</p>
+<h3 id="B-splines（B样条）"><a href="#B-splines（B样条）" class="headerlink" title="B-splines（B样条）"></a>B-splines（B样条）</h3><p>样条是一种完全可控的曲线，而B样条是贝塞尔曲线的延伸，它具有局部性，在改动控制点时影响的范围有限。</p>
+<h2 id="曲面"><a href="#曲面" class="headerlink" title="曲面"></a>曲面</h2><h3 id="贝塞尔曲面"><a href="#贝塞尔曲面" class="headerlink" title="贝塞尔曲面"></a>贝塞尔曲面</h3><p>贝塞尔曲面是由贝塞尔曲线得到的。原理和双线性插值基本相同，我们在两个方向上分别应用贝塞尔曲线即可。</p>
+<h2 id="三角形的细分和简化"><a href="#三角形的细分和简化" class="headerlink" title="三角形的细分和简化"></a>三角形的细分和简化</h2><h3 id="三角形的细分"><a href="#三角形的细分" class="headerlink" title="三角形的细分"></a>三角形的细分</h3><p>有的时候，三角形数量不足会导致模型不够精细，这时候，我们希望能增加三角形的数量来提升模型的精细度。细分通常分为两步：将一个三角形分成多个三角形，之后调整这些三角形的位置使其符合模型。</p>
+<h4 id="Loop细分-Loop-Subdivision"><a href="#Loop细分-Loop-Subdivision" class="headerlink" title="Loop细分(Loop Subdivision)"></a>Loop细分(Loop Subdivision)</h4><p>将三角形三边的中点连起来，就得到了四个小的三角形。以前的顶点称为旧的顶点，中点称为新的顶点。</p>
+<p>对于新的顶点，如果它被两个三角形共享，则它的位置由这两个三角形的旧的顶点加权得出。和它在同一条线段上的两个顶点的权值是3/8，另外两个顶点的权值是1/8。如图所示：</p>
+<p><img src="/undefined/a5e850e2/image-20241229160151471.png" alt="New Vertex"></p>
+<p>对于旧的顶点，定义n为顶点的度，定义u为和n有关的数，当n=3时，u=3/16，否则u=3/(8n)。旧的顶点的位置有自己和周围的点加权得出，如图所示：</p>
+<p><img src="/undefined/a5e850e2/image-20241229160945037.png" alt="Old Vertex"></p>
+<h4 id="Catmull-Clark细分"><a href="#Catmull-Clark细分" class="headerlink" title="Catmull-Clark细分"></a>Catmull-Clark细分</h4><p>Loop细分只能对三角形做细分，而Catmull-Clark细分在一般的情况下也能进行操作。</p>
+<p>定义非四边形为所有边数不为4的多边形，奇异点为度不等于4的点。对所有的边都取中点，所有的面也取中心点，将中点和中心点连起来就产生了更多的多边形。当进行这样一次操作后，奇异点的数量增加了非四边形的数量，所有非四边形都消失，并且之后不会再有奇异点的增加和非四边形的出现。效果如下：</p>
+<p><img src="/undefined/a5e850e2/image-20241229162632162.png" alt="Catmull-Clark"></p>
+<p>每个点位置的更新方式如下图所示：</p>
+<p><img src="/undefined/a5e850e2/image-20241229163314152.png" alt="Catmull-Clark Vertex Update Rules"></p>
+<h3 id="三角形的简化"><a href="#三角形的简化" class="headerlink" title="三角形的简化"></a>三角形的简化</h3><p>有的时候（例如当物体离摄像机很远的时候），物体的精细程度并不十分重要，在这种情况下，我们希望用更少的三角形来表示物体，以达到减少性能消耗的目的。</p>
+<h4 id="边坍缩-Edge-Collapse"><a href="#边坍缩-Edge-Collapse" class="headerlink" title="边坍缩(Edge Collapse)"></a>边坍缩(Edge Collapse)</h4><p>想象有一条边，当我们捏住它的两个顶点并重叠到一起，这条边就不复存在了。这就是边坍缩的概念。但是对于一个物体来说，我们怎么知道哪些边不重要，可以进行坍缩，哪些不能呢？这里需要用到<strong>二次误差度量</strong>的概念。<strong>二次误差度量是指顶点到到和它相邻的所有平面的距离的平方和</strong>。</p>
+<p>在进行边坍缩时，优先坍缩二次误差度量最小的边即可。但是，当我们对一条边进行坍缩后，和它相邻的边会受到影响，导致二次误差度量受到影响，这使得我们无法先计算所有边的二次误差度量，再依次进行坍缩。在这里，我们可以用最小堆的数据结构进行计算。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://example.com">Keshiki</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://example.com/undefined/a5e850e2.html">http://example.com/undefined/a5e850e2.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://example.com" target="_blank">Keshiki's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/avatar.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Keshiki</div><div class="author-info-description">我们的头脑比天空更辽阔.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yuun4g1"><i class="fab fa-github"></i><span>我的github</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Keshiki领域~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%90GAMES101-%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95%E2%80%94%E2%80%94%E5%87%A0%E4%BD%95"><span class="toc-number">1.</span> <span class="toc-text">【GAMES101]图形学学习记录——几何</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E5%92%8C%E6%98%BE%E5%BC%8F%E5%87%A0%E4%BD%95%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.1.</span> <span class="toc-text">隐式和显式几何表示</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E5%87%A0%E4%BD%95%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.1.1.</span> <span class="toc-text">隐式几何表示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E5%87%A0%E4%BD%95%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.1.2.</span> <span class="toc-text">显式几何表示</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E7%9A%84%E9%9A%90%E5%BC%8F%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.2.</span> <span class="toc-text">不同的隐式表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E7%9A%84%E6%98%BE%E5%BC%8F%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.3.</span> <span class="toc-text">不同的显式表示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B2%E7%BA%BF-Curves"><span class="toc-number">1.4.</span> <span class="toc-text">曲线(Curves)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF"><span class="toc-number">1.4.1.</span> <span class="toc-text">贝塞尔曲线</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AE%97%E6%B3%95"><span class="toc-number">1.4.1.1.</span> <span class="toc-text">算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%A7%E8%B4%A8"><span class="toc-number">1.4.1.2.</span> <span class="toc-text">性质</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%90%E6%AE%B5%E6%8E%A7%E5%88%B6%E7%9A%84%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E7%BA%BF"><span class="toc-number">1.4.1.3.</span> <span class="toc-text">逐段控制的贝塞尔曲线</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#B-splines%EF%BC%88B%E6%A0%B7%E6%9D%A1%EF%BC%89"><span class="toc-number">1.4.2.</span> <span class="toc-text">B-splines（B样条）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B2%E9%9D%A2"><span class="toc-number">1.5.</span> <span class="toc-text">曲面</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9D%E5%A1%9E%E5%B0%94%E6%9B%B2%E9%9D%A2"><span class="toc-number">1.5.1.</span> <span class="toc-text">贝塞尔曲面</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E8%A7%92%E5%BD%A2%E7%9A%84%E7%BB%86%E5%88%86%E5%92%8C%E7%AE%80%E5%8C%96"><span class="toc-number">1.6.</span> <span class="toc-text">三角形的细分和简化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E8%A7%92%E5%BD%A2%E7%9A%84%E7%BB%86%E5%88%86"><span class="toc-number">1.6.1.</span> <span class="toc-text">三角形的细分</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Loop%E7%BB%86%E5%88%86-Loop-Subdivision"><span class="toc-number">1.6.1.1.</span> <span class="toc-text">Loop细分(Loop Subdivision)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Catmull-Clark%E7%BB%86%E5%88%86"><span class="toc-number">1.6.1.2.</span> <span class="toc-text">Catmull-Clark细分</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E8%A7%92%E5%BD%A2%E7%9A%84%E7%AE%80%E5%8C%96"><span class="toc-number">1.6.2.</span> <span class="toc-text">三角形的简化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%B9%E5%9D%8D%E7%BC%A9-Edge-Collapse"><span class="toc-number">1.6.2.1.</span> <span class="toc-text">边坍缩(Edge Collapse)</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/undefined/e2faed25.html" title="【游戏不锐评】VA-11 Hall-A Cyberpunk Bartender Action —— 调制饮料，改变人生"><img src="https://s21.ax1x.com/2025/01/29/pEVrAbT.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【游戏不锐评】VA-11 Hall-A Cyberpunk Bartender Action —— 调制饮料，改变人生"/></a><div class="content"><a class="title" href="/undefined/e2faed25.html" title="【游戏不锐评】VA-11 Hall-A Cyberpunk Bartender Action —— 调制饮料，改变人生">【游戏不锐评】VA-11 Hall-A Cyberpunk Bartender Action —— 调制饮料，改变人生</a><time datetime="2025-01-29T15:10:19.000Z" title="发表于 2025-01-29 23:10:19">2025-01-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/7f87aff.html" title="【GAME101】图形学学习记录——光线追踪">【GAME101】图形学学习记录——光线追踪</a><time datetime="2024-12-29T09:09:29.000Z" title="发表于 2024-12-29 17:09:29">2024-12-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/a5e850e2.html" title="【GAMES101]图形学学习记录——几何">【GAMES101]图形学学习记录——几何</a><time datetime="2024-12-27T10:59:06.000Z" title="发表于 2024-12-27 18:59:06">2024-12-27</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/61766197.html" title="【GAMES101】图形学学习记录——着色">【GAMES101】图形学学习记录——着色</a><time datetime="2024-12-26T14:01:01.000Z" title="发表于 2024-12-26 22:01:01">2024-12-26</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/6cf9a142.html" title="【GAMES101】图形学学习记录——光栅化">【GAMES101】图形学学习记录——光栅化</a><time datetime="2024-12-24T14:11:40.000Z" title="发表于 2024-12-24 22:11:40">2024-12-24</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By Keshiki</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"></div><div class="aplayer no-destroy" data-id="4875655013" data-server="netease" data-type="playlist"   data-order="list" data-fixed="true" data-preload="auto" data-autoplay="false" data-mutex="true" ></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><div class="app-refresh" id="app-refresh" style="position: fixed;top: -2.2rem;left: 0;right: 0;z-index: 99999;padding: 0 1rem;font-size: 15px;height: 2.2rem;transition: all 0.3s ease;"><div class="app-refresh-wrap" style=" display: flex;color: #fff;height: 100%;align-items: center;justify-content: center;"><label>好像有什么动静</label><a href="javascript:void(0)" onclick="location.reload()"><span style="color: #fff;text-decoration: underline;cursor: pointer;">去看看</span></a></div></div><script>if ('serviceWorker' in navigator) {
+if (navigator.serviceWorker.controller) {
+navigator.serviceWorker.addEventListener('controllerchange', function() {
+showNotification()
+})
+}
+window.addEventListener('load', function() {
+navigator.serviceWorker.register('/sw.js')
+})
+}
+function showNotification() {
+if (GLOBAL_CONFIG.Snackbar) {
+var snackbarBg =
+document.documentElement.getAttribute('data-theme') === 'light' ?
+GLOBAL_CONFIG.Snackbar.bgLight :
+GLOBAL_CONFIG.Snackbar.bgDark
+var snackbarPos = GLOBAL_CONFIG.Snackbar.position
+Snackbar.show({
+text: '好像有什么动静',
+backgroundColor: snackbarBg,
+duration: 500000,
+pos: snackbarPos,
+actionText: '去看看',
+actionTextColor: '#fff',
+onActionClick: function(e) {
+location.reload()
+},
+})
+} else {
+var showBg =
+document.documentElement.getAttribute('data-theme') === 'light' ?
+'#3b70fc' :
+'#1f1f1f'
+var cssText = `top: 0; background: ${showBg};`
+document.getElementById('app-refresh').style.cssText = cssText
+}
+}</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><script async src="/js/ali_font.js"></script><div class="js-pjax"><script async="async">var arr = document.getElementsByClassName('recent-post-item');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__zoomIn');
+    arr[i].setAttribute('data-wow-duration', '1.5s');
+    arr[i].setAttribute('data-wow-delay', '200ms');
+    arr[i].setAttribute('data-wow-offset', '30');
+    arr[i].setAttribute('data-wow-iteration', '1');
+  }</script><script async="async">var arr = document.getElementsByClassName('card-widget');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__zoomIn');
+    arr[i].setAttribute('data-wow-duration', '');
+    arr[i].setAttribute('data-wow-delay', '200ms');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('flink-list-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__flipInY');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('flink-list-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__animated');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('article-sort-item');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__slideInRight');
+    arr[i].setAttribute('data-wow-duration', '1.5s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('site-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__flipInY');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('site-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__animated');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script></div><script defer src="https://cdn.cbd.int/hexo-butterfly-wowjs/lib/wow.min.js"></script><script defer src="https://cdn.cbd.int/hexo-butterfly-wowjs/lib/wow_init.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/"});</script></body></html>
