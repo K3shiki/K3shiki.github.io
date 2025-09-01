@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>【GDC】守望先锋的游戏架构和网络代码 | Keshiki's Blog</title><meta name="author" content="Keshiki"><meta name="copyright" content="Keshiki"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="【GDC】守望先锋的游戏架构和网络代码在完成了上一个项目的网络部分后，想着在网上找找相关的资料，结果意外发现了我最喜欢的守望先锋的GDC。这篇演讲可以说是真正的宝藏，虽然并未完全揭露守望先锋的优秀代码是如何写成的（事实上这里只展示了冰山一角），但是看到有这种优秀的程序员为其努力，那结果也是理所当然的。 这篇演讲主要包含了两大部分：守望先锋的ECS架构，以及网络代码。而在网络部分，则还是主要围绕着两">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【GDC】守望先锋的游戏架构和网络代码">
+<meta property="og:url" content="https://www.keshiki.top/undefined/c1786556.html">
+<meta property="og:site_name" content="Keshiki&#39;s Blog">
+<meta property="og:description" content="【GDC】守望先锋的游戏架构和网络代码在完成了上一个项目的网络部分后，想着在网上找找相关的资料，结果意外发现了我最喜欢的守望先锋的GDC。这篇演讲可以说是真正的宝藏，虽然并未完全揭露守望先锋的优秀代码是如何写成的（事实上这里只展示了冰山一角），但是看到有这种优秀的程序员为其努力，那结果也是理所当然的。 这篇演讲主要包含了两大部分：守望先锋的ECS架构，以及网络代码。而在网络部分，则还是主要围绕着两">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s21.ax1x.com/2025/09/01/pVcj2qK.jpg">
+<meta property="article:published_time" content="2025-08-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-09-01T13:57:34.689Z">
+<meta property="article:author" content="Keshiki">
+<meta property="article:tag" content="Keshiki,Keshiki&#39;s Blog,Keshiki的博客,博客,Blog,blog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s21.ax1x.com/2025/09/01/pVcj2qK.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "【GDC】守望先锋的游戏架构和网络代码",
+  "url": "https://www.keshiki.top/undefined/c1786556.html",
+  "image": "https://s21.ax1x.com/2025/09/01/pVcj2qK.jpg",
+  "datePublished": "2025-08-31T16:00:00.000Z",
+  "dateModified": "2025-09-01T13:57:34.689Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Keshiki",
+      "url": "https://www.keshiki.top/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://www.keshiki.top/undefined/c1786556.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="manifest" href="/manifest.json"/><meta name="msapplication-TileColor" content="#39C5BB"/><link rel="apple-touch-icon" sizes="180x180" href="/img/siteicon/128.png"/><link rel="icon" type="image/png" sizes="32x32" href="/img/siteicon/32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/img/siteicon/16.png"/><link rel="mask-icon" href="/img/siteicon/128.png" color="#5bbad5"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '【GDC】守望先锋的游戏架构和网络代码',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css" media="defer" onload="this.media='all'"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<link rel="stylesheet" href="https://cdn.cbd.int/hexo-butterfly-wowjs/lib/animate.min.css" media="print" onload="this.media='screen'"><link rel="stylesheet" href="https://cdn.cbd.int/hexo-butterfly-tag-plugins-plus@latest/lib/assets/font-awesome-animation.min.css" media="defer" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/hexo-butterfly-tag-plugins-plus@latest/lib/tag_plugins.css" media="defer" onload="this.media='all'"><script src="https://cdn.cbd.int/hexo-butterfly-tag-plugins-plus@latest/lib/assets/carousel-touch.js"></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="Keshiki's Blog" type="application/atom+xml">
+</head><body><div id="web_bg" style="background-image: url(https://s21.ax1x.com/2024/12/11/pAbSVg0.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/bangumis/index.html"><i class="fa-fw fas fa-home"></i><span> 追番</span></a></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s21.ax1x.com/2025/09/01/pVcj2qK.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Keshiki's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">【GDC】守望先锋的游戏架构和网络代码</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/bangumis/index.html"><i class="fa-fw fas fa-home"></i><span> 追番</span></a></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">【GDC】守望先锋的游戏架构和网络代码</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-08-31T16:00:00.000Z" title="发表于 2025-09-01 00:00:00">2025-09-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-09-01T13:57:34.689Z" title="更新于 2025-09-01 21:57:34">2025-09-01</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="【GDC】守望先锋的游戏架构和网络代码"><a href="#【GDC】守望先锋的游戏架构和网络代码" class="headerlink" title="【GDC】守望先锋的游戏架构和网络代码"></a>【GDC】守望先锋的游戏架构和网络代码</h1><p>在完成了上一个项目的网络部分后，想着在网上找找相关的资料，结果意外发现了我最喜欢的守望先锋的GDC。这篇演讲可以说是真正的宝藏，虽然并未完全揭露守望先锋的优秀代码是如何写成的（事实上这里只展示了冰山一角），但是看到有这种优秀的程序员为其努力，那结果也是理所当然的。</p>
+<p>这篇演讲主要包含了两大部分：守望先锋的<strong><code>ECS</code>架构</strong>，以及网络代码。而在网络部分，则还是主要围绕着两大问题：<strong>预测回滚</strong>，以及<strong>服务器回溯</strong>。事实上，在任何网络游戏中，网络部分的主要工作都围绕着这两点展开，而最困难的问题则是如何在这两个基本思想下进行性能和游玩体验的优化。虽然是2017年的演讲，但是我认为其内容直到今天都值得学习。</p>
+<p>翻译视频链接：【【青幻译制】GDC讲座系列之三 守望先锋的游戏架构和网络代码】 <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1p4411k7N8">https://www.bilibili.com/video/BV1p4411k7N8</a></p>
+<h2 id="1-ECS架构"><a href="#1-ECS架构" class="headerlink" title="1.ECS架构"></a>1.<code>ECS</code>架构</h2><h3 id="1-1-ECS"><a href="#1-1-ECS" class="headerlink" title="1.1 ECS"></a>1.1 <code>ECS</code></h3><p>这篇演讲的主旨是分享一些在不断增长的代码库中降低复杂度的方法，而这个方法的底层逻辑是严格遵守<strong><code>ECS</code>架构。</strong>何谓<code>ECS</code>架构？<code>ECS</code>是三个单词的简称：<strong><code>Enity</code>（实体）</strong>，<strong><code>Component</code>（组件）</strong>，<strong><code>System</code>（系统）</strong>，而整个架构就是围绕着这三部分展开。</p>
+<p><img src="/undefined/c1786556/942c9d9724bf5f7ae255bb1ad74d6367.png" alt="img"></p>
+<p>这是一张很经典的图，展现了<code>ECS</code>架构的大概面貌。游戏世界由一些系统和实体构成，而实体实际上就是一个对应着一组组件的<code>ID</code>。<strong>组件用于存储游戏状态，而不具备行为；系统具有行为，却不保存游戏状态</strong>。简单来说，组件没有函数（除了一些辅助函数），而系统没有成员变量。</p>
+<p>对于系统，它不需要知道每一个实体的存在，它只需要对某些组件进行操作。当系统进行更新时，它会遍历所有的相关组件并对其进行操作，而由于实体实际上就是组件的集合，系统的这些操作就会自然而然地反映在实体上。演讲中举了一个例子：在守望先锋中，对于玩家联网系统，它会遍历联网组件，这个组件是在服务器上对应每个每个玩家连接的组件，它存在于玩家控制的实体中，包括游戏的参与者与旁观者，但是系统不关心这个。系统会读取联网组件的操作流和状态，确保玩家做出了一些事情，而当玩家一段时间没有行动时，系统就会发出挂机警告。从宏观上来看，系统做的事情就是操作所有的联网组件，根据情况对其发出挂机警告或者将其踢出游戏。所有拥有联网组件的实体（玩家）都会受到这一约束，而对于AI控制的实体，它们没有联网组件，所以不会收到挂机警告，也不会被踢出游戏。<strong>对于一个实体，当它具有行为所需的组件元组时，即会成为该行为的对象</strong>。</p>
+<p>这种行为和状态分离的做法有什么好处？</p>
+<h3 id="1-1-2-更好地使用ECS架构"><a href="#1-1-2-更好地使用ECS架构" class="headerlink" title="1.1.2 更好地使用ECS架构"></a>1.1.2 更好地使用<code>ECS</code>架构</h3><p>虽然<code>ECS</code>架构的思想比较容易理解，但是在实际的项目开发中必然存在着一些问题。</p>
+<p>守望先锋中的输入系统是从非<code>ECS</code>架构的项目中迁移过来的，输入状态会被保存在输入系统中，任何对输入状态的访问可以通过一个指向输入系统的指针来实现。这听起来也不是不行，虽然它违反了“组件没有函数，系统没有状态”这条规则，但是由于输入状态只有一个实例，这样做似乎没什么破坏性，并且“只有在出现多个组件实例的时候才需要建立一个新的组件类型”是一个常见的思想。</p>
+<p>但是这么做的后果就是，当一个系统需要查询输入状态的时候，它需要包含输入系统，这会增加编译时间；并且这种做法造成了一些耦合，将系统的行为暴露给了其它的系统。最致命的问题是，当守望先锋引入死亡回放时，回放的原理是创建一个新的<code>ECS</code>世界，服务器会传送回来一个8-12秒的数据包，然后转而渲染新的世界，将数据包用于世界的运行。在这种情况下，不再只有一个全局的实体管理，而是变成了两个，系统A无法直接访问系统B，只能通过共享的实体管理来访问系统B，这种做法十分难受。</p>
+<p>经过团队一段时间的反省和复盘后，最终的解决方案是，<strong>在每个实体管理中定义仅存在一个实例的组件类型，称之为单例组件</strong>。单例组件的引入解决了“系统状态”带来的麻烦，减少了耦合以及随之而来的复杂度。</p>
+<p>另一个问题是，有一些行为会在多个系统中被调用。对于这些具有共享行为的辅助函数，有一些规则。如果想要从不同的地方调用这个辅助函数，这个函数应该访问尽可能少的组件，并且最好只有很小的副作用或者没有副作用。如果由一个辅助函数读取了多个组件以及有不少副作用，应该尽可能少地调用它。</p>
+<p>演讲中还分享了一些减少耦合的技巧。</p>
+<p>“延迟”是指将执行具有明显副作用的行为所需的状态保存起来，将调用延迟到帧间某个单一的、更加合适的时间点。事实上，延迟是在任何性能优化中都被广泛运用的思想，例如单例模式的懒汉模式，以及对象拷贝。在守望先锋中，当子弹发生命中时会在命中位置产生特效，而这些特效之间也有不同的层级关系，总之，调用产生特效的函数的副作用是巨大的。如果每次命中都调用产生特效的代码，那么代码的复杂度会飞升，一旦修改了相关代码，所有调用这些代码的地方都需要进行测试。守望先锋中的做法是，当发生命中时，不直接调用产生特效的函数，而是在一个触碰的单例中增加一个相应的记录，在场景更新和渲染准备前，系统会遍历所有即将发生的触碰，根据多层次细节的规则、覆盖的规则等输生成特效。这样一来，每一帧只会调用一次产生特效的函数，代码的复杂度大大降低了，同时提升了性能和美术表现。</p>
+<p>“遵照这些约束，意味着你必须通过一种特定的方式来解决问题，然而这些技术所带来的是持续的可维护、解耦以及简介的代码。我们限制你，把你扔进一个坑里，但这是一个通往成功的坑。”</p>
+<h2 id="2-预测回滚"><a href="#2-预测回滚" class="headerlink" title="2.预测回滚"></a>2.预测回滚</h2><p>对于快速响应的网络动作游戏，必须预测玩家的行动，因为如果等着服务器来告诉玩家发生了什么事情是没法做到快速响应的。并且，不能在重要的模拟中信任客户端上除了输入以外的东西。</p>
+<p>快速响应的需求是：当玩家按下按键的时候，要能立刻看到响应，即使是在高延迟的情况下。这是通过客户端的预测来实现的，而错误预测则是以服务器作为权威来验证以及网络延迟的副作用。在演讲提供的例子中，温斯顿在被小美冻住的前一瞬间跳了出去，然而这是在客户端预测的结果，服务器判断温斯顿最终被冻住了，因此在客户端上，温斯顿先是跳了出去，然后被拉回了原地并被冻住。</p>
+<p>守望先锋的确定性模拟算法依赖于一个同步的时钟、固定间隔的更新以及离散化。服务器和客户端都根据同步的时钟以及离散化的值来进行操作。时间被离散化成称之为“命令帧”的单位，固定为16毫秒。在守望先锋的<code>ECS</code>架构中，然后模拟都是基于玩家的输入来进行的，游戏会在每一个命令帧中调用<code>UpdateFixed</code>函数来进行模拟。客户端在进行模拟的同时会将命令帧内的输入发送到服务器进行权威性模拟，时间间隔为半个<code>RTT</code>+缓存大小，而客户端收到服务器的权威模拟结果的时间为一个完整的<code>RTT</code>+缓存大小。</p>
+<p><img src="/undefined/c1786556/image-20250901213405130.png" alt="image-20250901213405130"></p>
+<p>如果客户端计算的结果和服务器一致，那么客户端继续继续模拟；如果不一致，那么出现了预测错误，需要进行调解。最简单的方法就是用服务器端的结果覆盖客户端的结果，但是毕竟服务器的结果是过去的，所以守望先锋的做法是不仅保存了运动状态的环状缓存，同时也保存了输入的环状缓存，因为角色移动的代码是非常确定性的，如果有一个起始运动状态，然后用输入去模拟运行，那么每一次都会得到相同的结果（实际上技能系统也是如此，但是技能不会被模拟）。当发生错误预测时，客户端会根据历史输入重新模拟从出错的时间一直到现在的状态。</p>
+<p>接下来的问题是丢包。服务器有一小段<code>Buffer</code>用来缓存玩家的输入，而当<code>Buffer</code>中的输入用完了以后仍然没有新的输入，说明发生了丢包。这时，服务器会进行猜测，重复上一个输入，而当真正的输入到来时，服务器会进行调解来确保没有错过任何一次按键。与此同时，服务器会告诉客户端：“我没有收到输入”，而客户端收到这个消息后会加快模拟的速度，同时服务器的<code>Buffer</code>也会增大，来得到更多的输入，弥补数据的丢失，直到服务器意识到客户端恢复了正常，它会通知客户端，客户端会向另一个方向调整时间，使<code>Buffer</code>缩小，直到恢复正常。</p>
+<p><img src="/undefined/c1786556/image-20250901213444217.png" alt="image-20250901213444217"></p>
+<p>为了防止丢失因为服务器的猜测而被跳过的客户端的输入，客户端发送的不只是当前命令帧的输入，而是自从上一个已经得到服务器验证的运动状态之后的所有输入。</p>
+<h2 id="3-服务器回溯"><a href="#3-服务器回溯" class="headerlink" title="3.服务器回溯"></a>3.服务器回溯</h2><p>对于射击游戏，通常会在本地进行命中预测，同时在服务器进行命中判定。然而，当角色瞄准的位置发送到服务器的时候，其瞄准的角色可能已经不在那了，因此需要将角色回溯到开火时的状态来进行验证。对于不同的游戏，进行回溯的方式不同。在我的上一个项目中，是直接在本地进行命中判定，然后将命中的角色发送到服务器，对特定的角色进行回溯，但是我并不认为这是一个好主意。在CS中，因为地图是固定的，并且只有10个玩家，角色的状态也比较简单，所以只需要将所有角色进行回溯即可。而守望先锋的做法在我看来充分体现了<code>ECS</code>架构的优势。在守望先锋中，不止玩家，有各种各样移动的物体，比如艾什的Bob，秩序之光的摄像头，运载目标以及沃斯卡亚工业区和66号公路的移动的浮板等。因为它们都可以移动，都有阻挡子弹的可能性，因此都应该被回溯。这听起来很麻烦，然而在<code>ECS</code>架构中，回溯系统只需要做一件事：对所有的运动组件进行回溯操作。这样一来，所有可能会移动并阻挡子弹的实体都会被回溯并实现正确的命中判定。</p>
+<p>当然，如果每次射击都将所有移动组件进行回溯的话，肯定会有不少性能浪费。守望先锋中使用了一个巧妙的优化方式：使用包围框表示所有运动组件在倒带范围内可能的移动范围。只有射线和包围框发生碰撞时才会进行相应的回溯。在碰撞检测中，先判断有没有命中大的包围盒再进行具体判断是很常见的操作（如AABB盒），但是将其在服务器回溯盒命中判定中进行实现真的很酷。</p>
+<p><img src="/undefined/c1786556/image-20250901202522079.png" alt="image-20250901202522079"></p>
+<p>和常见的做法一样，当客户端的延迟过高时，服务器只会回溯一段时间，然后通过预测来进行命中判断，防止躲到掩体后仍然被命中的情况太过严重。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://www.keshiki.top">Keshiki</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://www.keshiki.top/undefined/c1786556.html">https://www.keshiki.top/undefined/c1786556.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://www.keshiki.top" target="_blank">Keshiki's Blog</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="https://s21.ax1x.com/2025/09/01/pVcj2qK.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Keshiki</div><div class="author-info-description">我们的头脑比天空更辽阔.</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">12</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yuun4g1"><i class="fab fa-github"></i><span>我的github</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到Keshiki领域~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E3%80%90GDC%E3%80%91%E5%AE%88%E6%9C%9B%E5%85%88%E9%94%8B%E7%9A%84%E6%B8%B8%E6%88%8F%E6%9E%B6%E6%9E%84%E5%92%8C%E7%BD%91%E7%BB%9C%E4%BB%A3%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text">【GDC】守望先锋的游戏架构和网络代码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-ECS%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">1.ECS架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-ECS"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 ECS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-%E6%9B%B4%E5%A5%BD%E5%9C%B0%E4%BD%BF%E7%94%A8ECS%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.2.</span> <span class="toc-text">1.1.2 更好地使用ECS架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%A2%84%E6%B5%8B%E5%9B%9E%E6%BB%9A"><span class="toc-number">1.2.</span> <span class="toc-text">2.预测回滚</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%9B%9E%E6%BA%AF"><span class="toc-number">1.3.</span> <span class="toc-text">3.服务器回溯</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/undefined/c1786556.html" title="【GDC】守望先锋的游戏架构和网络代码"><img src="https://s21.ax1x.com/2025/09/01/pVcj2qK.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="【GDC】守望先锋的游戏架构和网络代码"/></a><div class="content"><a class="title" href="/undefined/c1786556.html" title="【GDC】守望先锋的游戏架构和网络代码">【GDC】守望先锋的游戏架构和网络代码</a><time datetime="2025-08-31T16:00:00.000Z" title="发表于 2025-09-01 00:00:00">2025-09-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/af2b6aaf.html" title="【UE5】多人联机TPS游戏开发（四） ——  延迟补偿">【UE5】多人联机TPS游戏开发（四） ——  延迟补偿</a><time datetime="2025-08-13T16:00:00.000Z" title="发表于 2025-08-14 00:00:00">2025-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/f9d4ce84.html" title="【UE5】多人联机TPS游戏开发（三） —— 射击游戏核心">【UE5】多人联机TPS游戏开发（三） —— 射击游戏核心</a><time datetime="2025-08-02T16:00:00.000Z" title="发表于 2025-08-03 00:00:00">2025-08-03</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/e6c9f323.html" title="【UE5】多人联机TPS游戏开发（二） —— 基础框架">【UE5】多人联机TPS游戏开发（二） —— 基础框架</a><time datetime="2025-07-16T16:00:00.000Z" title="发表于 2025-07-17 00:00:00">2025-07-17</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/undefined/f18ea7eb.html" title="【UE5】多人联机TPS游戏开发（一） ——  制作联机插件">【UE5】多人联机TPS游戏开发（一） ——  制作联机插件</a><time datetime="2025-07-04T16:00:00.000Z" title="发表于 2025-07-05 00:00:00">2025-07-05</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2024 - 2025 By Keshiki</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><div class="aplayer no-destroy" data-id="4875655013" data-server="netease" data-type="playlist"   data-order="list" data-fixed="true" data-preload="auto" data-autoplay="false" data-mutex="true" ></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><div class="app-refresh" id="app-refresh" style="position: fixed;top: -2.2rem;left: 0;right: 0;z-index: 99999;padding: 0 1rem;font-size: 15px;height: 2.2rem;transition: all 0.3s ease;"><div class="app-refresh-wrap" style=" display: flex;color: #fff;height: 100%;align-items: center;justify-content: center;"><label>好像有什么动静</label><a href="javascript:void(0)" onclick="location.reload()"><span style="color: #fff;text-decoration: underline;cursor: pointer;">去看看</span></a></div></div><script>if ('serviceWorker' in navigator) {
+if (navigator.serviceWorker.controller) {
+navigator.serviceWorker.addEventListener('controllerchange', function() {
+showNotification()
+})
+}
+window.addEventListener('load', function() {
+navigator.serviceWorker.register('/sw.js')
+})
+}
+function showNotification() {
+if (GLOBAL_CONFIG.Snackbar) {
+var snackbarBg =
+document.documentElement.getAttribute('data-theme') === 'light' ?
+GLOBAL_CONFIG.Snackbar.bgLight :
+GLOBAL_CONFIG.Snackbar.bgDark
+var snackbarPos = GLOBAL_CONFIG.Snackbar.position
+Snackbar.show({
+text: '好像有什么动静',
+backgroundColor: snackbarBg,
+duration: 500000,
+pos: snackbarPos,
+actionText: '去看看',
+actionTextColor: '#fff',
+onActionClick: function(e) {
+location.reload()
+},
+})
+} else {
+var showBg =
+document.documentElement.getAttribute('data-theme') === 'light' ?
+'#3b70fc' :
+'#1f1f1f'
+var cssText = `top: 0; background: ${showBg};`
+document.getElementById('app-refresh').style.cssText = cssText
+}
+}</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div><!-- hexo injector body_end start --><div class="js-pjax"><script async="async">var arr = document.getElementsByClassName('recent-post-item');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__zoomIn');
+    arr[i].setAttribute('data-wow-duration', '1.5s');
+    arr[i].setAttribute('data-wow-delay', '200ms');
+    arr[i].setAttribute('data-wow-offset', '30');
+    arr[i].setAttribute('data-wow-iteration', '1');
+  }</script><script async="async">var arr = document.getElementsByClassName('card-widget');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__zoomIn');
+    arr[i].setAttribute('data-wow-duration', '');
+    arr[i].setAttribute('data-wow-delay', '200ms');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('flink-list-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__flipInY');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('flink-list-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__animated');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('article-sort-item');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__slideInRight');
+    arr[i].setAttribute('data-wow-duration', '1.5s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('site-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__flipInY');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script><script async="async">var arr = document.getElementsByClassName('site-card');
+for(var i = 0;i<arr.length;i++){
+    arr[i].classList.add('wow');
+    arr[i].classList.add('animate__animated');
+    arr[i].setAttribute('data-wow-duration', '3s');
+    arr[i].setAttribute('data-wow-delay', '');
+    arr[i].setAttribute('data-wow-offset', '');
+    arr[i].setAttribute('data-wow-iteration', '');
+  }</script></div><script defer src="https://cdn.cbd.int/hexo-butterfly-wowjs/lib/wow.min.js"></script><script defer src="https://cdn.cbd.int/hexo-butterfly-wowjs/lib/wow_init.js"></script><script async src="/js/ali_font.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/"});</script></body></html>
